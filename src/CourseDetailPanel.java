@@ -1,6 +1,3 @@
-// CourseDetailPanel.java
-// This panel displays the details of a specific course.
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -17,6 +14,10 @@ public class CourseDetailPanel extends JPanel {
     private JTable topicsTable;
     private JLabel courseNameLabel;
 
+    private JLabel resourcesDueLabel;
+    private JLabel totalCoursesLabel;
+    private JLabel lastReviewLabel;
+
     public CourseDetailPanel(DataManager dataManager, UUID courseId, MainApplicationFrame mainFrame) {
         this.dataManager = dataManager;
         this.mainFrame = mainFrame;
@@ -24,23 +25,36 @@ public class CourseDetailPanel extends JPanel {
 
         setLayout(new BorderLayout(20, 20));
         setBorder(new EmptyBorder(20, 20, 20, 20));
-        setBackground(new Color(245, 245, 245));
+        setBackground(new Color(247, 246, 243)); // Notion-like background
 
-        // Header Panel (Top part of the design)
+        // Header
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
+
         courseNameLabel = new JLabel(currentCourse.getName());
-        courseNameLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        courseNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         headerPanel.add(courseNameLabel, BorderLayout.WEST);
 
-        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerButtons.setOpaque(false);
-        JButton editCourseButton = new JButton("Edit");
-        JButton deleteCourseButton = new JButton("Delete");
 
-        editCourseButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Edit functionality not yet implemented."));
+        JButton editCourseButton = new JButton("Edit");
+        editCourseButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JButton deleteCourseButton = new JButton("Delete");
+        deleteCourseButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        editCourseButton.addActionListener(e -> {
+            String newName = JOptionPane.showInputDialog(this, "Edit course name:", currentCourse.getName());
+            if (newName != null && !newName.trim().isEmpty()) {
+                currentCourse.setName(newName.trim());
+                courseNameLabel.setText(newName.trim());
+                mainFrame.saveDataInBackground();
+            }
+        });
+
         deleteCourseButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this course?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this course?",
+                    "Confirm Deletion", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 dataManager.deleteCourse(currentCourse.getId());
                 mainFrame.updateSidebar();
@@ -52,103 +66,124 @@ public class CourseDetailPanel extends JPanel {
         headerButtons.add(editCourseButton);
         headerButtons.add(deleteCourseButton);
         headerPanel.add(headerButtons, BorderLayout.EAST);
+
         add(headerPanel, BorderLayout.NORTH);
 
-        // Center Content Panel (Summary and Topics)
-        JPanel contentPanel = new JPanel(new BorderLayout(20, 20));
-        contentPanel.setOpaque(false);
-
-        // Top section with summary panels
-        JPanel summaryPanelWrapper = new JPanel(new GridLayout(1, 2, 20, 0));
-        summaryPanelWrapper.setOpaque(false);
-
-        JPanel githubPanel = new JPanel(new BorderLayout());
-        githubPanel.setBorder(BorderFactory.createTitledBorder("Github/File activity summary"));
-        githubPanel.setBackground(Color.WHITE);
-        JTextArea summaryArea = new JTextArea("Total Topics: " + currentCourse.getTopics().size() + "\nTotal Resources: " + dataManager.getAllResourcesInCourse(currentCourse.getId()).size());
-        summaryArea.setEditable(false);
-        summaryArea.setLineWrap(true);
-        summaryArea.setWrapStyleWord(true);
-        githubPanel.add(new JScrollPane(summaryArea), BorderLayout.CENTER);
-
-        JPanel statsPanel = new JPanel(new GridLayout(3, 1, 0, 10));
+        // Stats
+        JPanel statsPanel = new JPanel(null);
         statsPanel.setOpaque(false);
-        statsPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
+        statsPanel.setPreferredSize(new Dimension(900, 120));
 
-        JPanel totalTopicsAddedPanel = new JPanel(new BorderLayout());
-        totalTopicsAddedPanel.setBackground(Color.WHITE);
-        totalTopicsAddedPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        JLabel totalTopicsLabel = new JLabel("Total Topic Added: " + currentCourse.getTopics().size());
-        totalTopicsAddedPanel.add(totalTopicsLabel, BorderLayout.CENTER);
-        statsPanel.add(totalTopicsAddedPanel);
+        JPanel resourcesPanel = createStatPanel("Resources Due Today",
+                String.valueOf(dataManager.getDueResourcesByCourse(currentCourse.getId()).size()),
+                new Color(255, 160, 122), 10, 10, 250, 100);
+        resourcesDueLabel = (JLabel) resourcesPanel.getComponent(1);
+        statsPanel.add(resourcesPanel);
 
-        JPanel totalDuePanel = new JPanel(new BorderLayout());
-        totalDuePanel.setBackground(Color.WHITE);
-        totalDuePanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        JLabel totalDueLabel = new JLabel("Total due: " + dataManager.getDueResourcesByCourse(currentCourse.getId()).size());
-        totalDuePanel.add(totalDueLabel, BorderLayout.CENTER);
-        statsPanel.add(totalDuePanel);
+        JPanel totalCoursesPanel = createStatPanel("Total Topics",
+                String.valueOf(currentCourse.getTopics().size()),
+                new Color(135, 206, 250), 270, 10, 250, 100);
+        totalCoursesLabel = (JLabel) totalCoursesPanel.getComponent(1);
+        statsPanel.add(totalCoursesPanel);
 
-        JPanel lastReviewPanel = new JPanel(new BorderLayout());
-        lastReviewPanel.setBackground(Color.WHITE);
-        lastReviewPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        JLabel lastReviewLabel = new JLabel("Last Review: " + (dataManager.getLastReviewDateInCourse(currentCourse.getId()) == null ? "N/A" : dataManager.getLastReviewDateInCourse(currentCourse.getId())));
-        lastReviewPanel.add(lastReviewLabel, BorderLayout.CENTER);
+        String lastReviewDate = String.valueOf(dataManager.getLastReviewDateInCourse(currentCourse.getId()));
+        if (lastReviewDate == null) lastReviewDate = "N/A";
+        JPanel lastReviewPanel = createStatPanel("Last Review", lastReviewDate,
+                new Color(144, 238, 144), 530, 10, 350, 100);
+        lastReviewLabel = (JLabel) lastReviewPanel.getComponent(1);
         statsPanel.add(lastReviewPanel);
 
-        summaryPanelWrapper.add(githubPanel);
-        summaryPanelWrapper.add(statsPanel);
+        add(statsPanel, BorderLayout.CENTER);
 
-        contentPanel.add(summaryPanelWrapper, BorderLayout.NORTH);
-
-        // Topics section
+        // Topics Section
         JPanel topicsPanel = new JPanel(new BorderLayout(10, 10));
         topicsPanel.setOpaque(false);
 
-        JPanel topicsHeader = new JPanel(new BorderLayout());
-        topicsHeader.setOpaque(false);
         JLabel topicsLabel = new JLabel("Topics");
-        topicsLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        topicsHeader.add(topicsLabel, BorderLayout.WEST);
-
-        JButton addTopicButton = new JButton("add new topics");
-        addTopicButton.addActionListener(e -> {
-            String topicName = JOptionPane.showInputDialog(this, "Enter new topic name:");
-            if (topicName != null && !topicName.trim().isEmpty()) {
-                currentCourse.addTopic(new Topic(topicName, "Not started"));
-                refreshPanel();
-                mainFrame.saveDataInBackground();
-            }
-        });
-        topicsHeader.add(addTopicButton, BorderLayout.EAST);
-        topicsPanel.add(topicsHeader, BorderLayout.NORTH);
+        topicsLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        topicsPanel.add(topicsLabel, BorderLayout.NORTH);
 
         String[] topicColumnNames = {"Topic Name", "Next review date", "Status"};
-        topicsTableModel = new DefaultTableModel(topicColumnNames, 0);
+        topicsTableModel = new DefaultTableModel(topicColumnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         topicsTable = new JTable(topicsTableModel);
+        topicsTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        topicsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        topicsTable.setRowHeight(32);
+        topicsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         topicsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int row = topicsTable.rowAtPoint(e.getPoint());
-                    if (row >= 0) {
-                        Topic selectedTopic = currentCourse.getTopics().get(row);
-                        mainFrame.showTopicDetail(currentCourse.getId(), selectedTopic.getId());
+                int row = topicsTable.getSelectedRow();
+                if (row >= 0 && e.getClickCount() == 1) {
+                    String topicName = (String) topicsTable.getValueAt(row, 0);
+                    Topic selected = currentCourse.getTopics().stream()
+                            .filter(t -> t.getName().equals(topicName))
+                            .findFirst().orElse(null);
+                    if (selected != null) {
+                        mainFrame.showTopicDetail(currentCourse.getId(), selected.getId());
                     }
                 }
             }
         });
 
-        topicsPanel.add(new JScrollPane(topicsTable), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(topicsTable);
+        topicsPanel.add(scrollPane, BorderLayout.CENTER);
 
-        contentPanel.add(topicsPanel, BorderLayout.CENTER);
-        add(contentPanel, BorderLayout.CENTER);
+        // Add Topic Button
+        JButton addTopicButton = new JButton("Add New Topic");
+        addTopicButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        addTopicButton.addActionListener(e -> {
+            String topicName = JOptionPane.showInputDialog(this, "Enter new topic name:");
+            if (topicName != null && !topicName.trim().isEmpty()) {
+                currentCourse.addTopic(new Topic(topicName.trim(), "Not started"));
+                refreshPanel();
+                mainFrame.saveDataInBackground();
+            }
+        });
+
+        JPanel addTopicPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        addTopicPanel.setOpaque(false);
+        addTopicPanel.add(addTopicButton);
+        topicsPanel.add(addTopicPanel, BorderLayout.SOUTH);
+
+        add(topicsPanel, BorderLayout.SOUTH);
 
         refreshPanel();
     }
 
+    private JPanel createStatPanel(String title, String value, Color bgColor, int x, int y, int width, int height) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(bgColor);
+        panel.setBounds(x, y, width, height);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);
+        valueLabel.setForeground(Color.WHITE);
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        panel.add(valueLabel, BorderLayout.CENTER);
+
+        return panel;
+    }
+
     public void refreshPanel() {
         courseNameLabel.setText(currentCourse.getName());
+        resourcesDueLabel.setText(String.valueOf(dataManager.getDueResourcesByCourse(currentCourse.getId()).size()));
+        totalCoursesLabel.setText(String.valueOf(currentCourse.getTopics().size()));
+
+        String lastReview = String.valueOf(dataManager.getLastReviewDateInCourse(currentCourse.getId()));
+        lastReviewLabel.setText(lastReview == null ? "N/A" : lastReview);
 
         topicsTableModel.setRowCount(0);
         for (Topic topic : currentCourse.getTopics()) {

@@ -109,7 +109,7 @@ public class MainApplicationFrame extends JFrame {
 
         sidebarPanel = new SidebarPanel(dataManager, this);
         sidebarPanel.setPreferredSize(new Dimension(250, 0));
-        sidebarPanel.setBackground(new Color(64, 46, 75)); // Dark purple from design
+        sidebarPanel.setBackground(new Color(0xF7F6F3)); // Notion sidebar background
 
         DashboardPanel dashboardPanel = new DashboardPanel(dataManager, this);
         mainContentPanel.add(dashboardPanel, "Dashboard");
@@ -118,6 +118,7 @@ public class MainApplicationFrame extends JFrame {
         add(mainContentPanel, BorderLayout.CENTER);
 
         loadDataInBackground();
+
     }
 
     private void setupMenuBar() {

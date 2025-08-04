@@ -12,7 +12,10 @@ public class TopicDetailPanel extends JPanel {
     private Course currentCourse;
     public Topic currentTopic;
     private DefaultTableModel resourcesTableModel;
+
     private JTable resourcesTable;
+
+
 
     public TopicDetailPanel(DataManager dataManager, UUID courseId, UUID topicId, MainApplicationFrame mainFrame) {
         this.dataManager = dataManager;

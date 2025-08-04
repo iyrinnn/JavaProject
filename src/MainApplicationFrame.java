@@ -6,6 +6,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import java.util.Map;
+import java.time.LocalDate;
 
 public class MainApplicationFrame extends JFrame {
     private JPanel mainContentPanel;
@@ -101,7 +103,7 @@ public class MainApplicationFrame extends JFrame {
         setSize(1200, 800);
         setLocationRelativeTo(null);
 
-        setupMenuBar();
+
 
         mainContentPanel = new JPanel();
         cardLayout = new CardLayout();
@@ -109,7 +111,7 @@ public class MainApplicationFrame extends JFrame {
 
         sidebarPanel = new SidebarPanel(dataManager, this);
         sidebarPanel.setPreferredSize(new Dimension(250, 0));
-        sidebarPanel.setBackground(new Color(0xF7F6F3)); // Notion sidebar background
+        sidebarPanel.setBackground(new Color(0xF7F6F3));
 
         DashboardPanel dashboardPanel = new DashboardPanel(dataManager, this);
         mainContentPanel.add(dashboardPanel, "Dashboard");
@@ -118,94 +120,46 @@ public class MainApplicationFrame extends JFrame {
         add(mainContentPanel, BorderLayout.CENTER);
 
         loadDataInBackground();
-
     }
 
-    private void setupMenuBar() {
-        menuBar = new JMenuBar();
-        helpMenu = new JMenu("Help");
-        aboutItem = new JMenuItem("About Smart Revision Organizer...");
-        theoryItem = new JMenuItem("Spaced Repetition Theory");
 
-        aboutItem.addActionListener(e -> {
-            AboutDialog dialog = new AboutDialog(this);
-            dialog.setVisible(true);
-        });
-
-        theoryItem.addActionListener(e -> {
-            TheoryDialog dialog = new TheoryDialog(this);
-            dialog.setVisible(true);
-        });
-
-        helpMenu.add(theoryItem);
-        helpMenu.add(aboutItem);
-        menuBar.add(helpMenu);
-        setJMenuBar(menuBar);
-    }
 
     public void showPanel(String name) {
         cardLayout.show(mainContentPanel, name);
     }
 
     public void showCourseDetail(UUID courseId) {
-        String cardName = "CourseDetail_" + courseId.toString();
-        boolean panelExists = false;
-        for (Component comp : mainContentPanel.getComponents()) {
-            if (comp.getName() != null && comp.getName().equals(cardName)) {
-                panelExists = true;
-                break;
-            }
-        }
-
-        if (!panelExists) {
+        String cardName = "CourseDetail_" + courseId;
+        if (!isPanelLoaded(cardName)) {
             CourseDetailPanel detailPanel = new CourseDetailPanel(dataManager, courseId, this);
             detailPanel.setName(cardName);
             mainContentPanel.add(detailPanel, cardName);
         }
-
         showPanel(cardName);
     }
 
     public void showTopicDetail(UUID courseId, UUID topicId) {
-        String cardName = "TopicDetail_" + topicId.toString();
-        boolean panelExists = false;
-        for (Component comp : mainContentPanel.getComponents()) {
-            if (comp.getName() != null && comp.getName().equals(cardName)) {
-                panelExists = true;
-                break;
-            }
-        }
-
-        if (!panelExists) {
+        String cardName = "TopicDetail_" + topicId;
+        if (!isPanelLoaded(cardName)) {
             TopicDetailPanel detailPanel = new TopicDetailPanel(dataManager, courseId, topicId, this);
             detailPanel.setName(cardName);
             mainContentPanel.add(detailPanel, cardName);
         }
-
         showPanel(cardName);
     }
 
     public void showResourceReview(UUID resourceId) {
-        String cardName = "ResourceReview_" + resourceId.toString();
-        boolean panelExists = false;
-        for (Component comp : mainContentPanel.getComponents()) {
-            if (comp.getName() != null && comp.getName().equals(cardName)) {
-                panelExists = true;
-                break;
-            }
-        }
-
-        if (!panelExists) {
+        String cardName = "ResourceReview_" + resourceId;
+        if (!isPanelLoaded(cardName)) {
             ResourceReviewPanel reviewPanel = new ResourceReviewPanel(dataManager, resourceId, this);
             reviewPanel.setName(cardName);
             mainContentPanel.add(reviewPanel, cardName);
         }
-
         showPanel(cardName);
     }
 
     public void showDashboard() {
-        cardLayout.show(mainContentPanel, "Dashboard");
+        showPanel("Dashboard");
     }
 
     public void updateSidebar() {
@@ -213,9 +167,8 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void loadDataInBackground() {
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));                                 // DATA LOADED SUCCESSFULLY   Succes
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
                 dataManager.loadData();
@@ -229,19 +182,17 @@ public class MainApplicationFrame extends JFrame {
                 JOptionPane.showMessageDialog(MainApplicationFrame.this, "Data loaded successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             }
         };
-
         worker.execute();
     }
 
     public void saveDataInBackground() {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
                 dataManager.saveData();
                 return null;
-            }
+            }                                                    // "Data saved successfully
 
             @Override
             protected void done() {
@@ -249,7 +200,15 @@ public class MainApplicationFrame extends JFrame {
                 System.out.println("Data saved successfully.");
             }
         };
-
         worker.execute();
+    }
+
+    private boolean isPanelLoaded(String cardName) {
+        for (Component comp : mainContentPanel.getComponents()) {
+            if (cardName.equals(comp.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -25,6 +25,11 @@ class Topic implements Serializable {
     public String getName() { return name; }
     public String getStatus() { return status; }
     public LocalDateTime getWentOnlineDate() { return wentOnlineDate; }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setStatus(String status) { this.status = status; }
     public List<Resource> getResources() { return resources; }
     public void addResource(Resource resource) { resources.add(resource); }

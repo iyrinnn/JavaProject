@@ -12,6 +12,7 @@ public class DashboardPanel extends JPanel {
     private DataManager dataManager;
     private MainApplicationFrame mainFrame;
     private DefaultListModel<Resource> upcomingReviewsListModel;
+    private ActivityChartDemo activityChartDemo = new ActivityChartDemo();
 
     public DashboardPanel(DataManager dataManager, MainApplicationFrame mainFrame) {
         this.dataManager = dataManager;
@@ -41,19 +42,19 @@ public class DashboardPanel extends JPanel {
             }
         });
 
-        JButton reviewButton = new JButton("Start Review");
-        reviewButton.addActionListener(e -> {
-            Resource selectedResource = upcomingReviewsList.getSelectedValue();
-            if (selectedResource != null) {
-                mainFrame.showResourceReview(selectedResource.getId());
-            } else {
-                JOptionPane.showMessageDialog(this, "Please select a resource to review.");
-            }
-        });
+//        JButton reviewButton = new JButton("Start Review");   // start review
+//        reviewButton.addActionListener(e -> {
+//            Resource selectedResource = upcomingReviewsList.getSelectedValue();
+//            if (selectedResource != null) {
+//                mainFrame.showResourceReview(selectedResource.getId());
+//            } else {
+//                JOptionPane.showMessageDialog(this, "Please select a resource to review.");
+//            }
+//        });
 
         upcomingReviewsPanel.add(new JScrollPane(upcomingReviewsList), BorderLayout.CENTER);
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.add(reviewButton);
+//        buttonPanel.add(reviewButton);
         upcomingReviewsPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(welcomeLabel, BorderLayout.NORTH);

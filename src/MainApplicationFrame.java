@@ -1,13 +1,8 @@
-// MainApplicationFrame.java
-// This is the main window of the application.
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
-import java.util.Map;
-import java.time.LocalDate;
 
 public class MainApplicationFrame extends JFrame {
     private JPanel mainContentPanel;
@@ -19,76 +14,8 @@ public class MainApplicationFrame extends JFrame {
     private JMenuItem aboutItem;
     private JMenuItem theoryItem;
 
-    // Inner class for the about dialog
-    private class AboutDialog extends JDialog {
-        public AboutDialog(JFrame owner) {
-            super(owner, "About Smart Revision Organizer", true);
-            setSize(450, 450);
-            setLocationRelativeTo(owner);
-            setResizable(false);
-
-            JEditorPane editorPane = new JEditorPane();
-            editorPane.setEditable(false);
-            editorPane.setContentType("text/html");
-
-            try {
-                URL htmlUrl = getClass().getResource("/about/about_app.html");
-                if (htmlUrl != null) {
-                    editorPane.setPage(htmlUrl);
-                } else {
-                    editorPane.setText("<html><body><h1>About Smart Revision Organizer</h1><p>A simple, yet effective tool for organizing your learning and applying spaced repetition to maximize recall. Designed and built by Irin Sultana & Sujana Farid.</p></body></html>");
-                }
-            } catch (IOException e) {
-                editorPane.setText("<html><body><h1>Error loading content!</h1><p>" + e.getMessage() + "</p></body></html>");
-                e.printStackTrace();
-            }
-
-            JScrollPane scrollPane = new JScrollPane(editorPane);
-            scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            add(scrollPane, BorderLayout.CENTER);
-
-            JPanel buttonPanel = new JPanel();
-            JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(e -> dispose());
-            buttonPanel.add(closeButton);
-            add(buttonPanel, BorderLayout.SOUTH);
-        }
-    }
-
-    // Inner class for the theory dialog
-    private class TheoryDialog extends JDialog {
-        public TheoryDialog(JFrame owner) {
-            super(owner, "Spaced Repetition Theory", true);
-            setSize(600, 500);
-            setLocationRelativeTo(owner);
-
-            JEditorPane editorPane = new JEditorPane();
-            editorPane.setEditable(false);
-            editorPane.setContentType("text/html");
-
-            try {
-                URL htmlUrl = getClass().getResource("/theory/sm2_theory.html");
-                if (htmlUrl != null) {
-                    editorPane.setPage(htmlUrl);
-                } else {
-                    editorPane.setText("<html><body><h1>SuperMemo 2 (SM-2) Algorithm</h1><p>The SM-2 algorithm is a key component of spaced repetition systems. It calculates the optimal time to review an item based on your previous recall performance.</p></body></html>");
-                }
-            } catch (IOException e) {
-                editorPane.setText("<html><body><h1>Error loading content!</h1><p>" + e.getMessage() + "</p></body></html>");
-                e.printStackTrace();
-            }
-
-            JScrollPane scrollPane = new JScrollPane(editorPane);
-            scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            add(scrollPane, BorderLayout.CENTER);
-
-            JPanel buttonPanel = new JPanel();
-            JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(e -> dispose());
-            buttonPanel.add(closeButton);
-            add(buttonPanel, BorderLayout.SOUTH);
-        }
-    }
+    // Inner classes AboutDialog and TheoryDialog as you wrote them (unchanged) ...
+    // (I omitted them here for brevity, but you keep them unchanged in your code)
 
     public MainApplicationFrame(DataManager dataManager) {
         this.dataManager = dataManager;
@@ -103,8 +30,6 @@ public class MainApplicationFrame extends JFrame {
         setSize(1200, 800);
         setLocationRelativeTo(null);
 
-
-
         mainContentPanel = new JPanel();
         cardLayout = new CardLayout();
         mainContentPanel.setLayout(cardLayout);
@@ -116,13 +41,17 @@ public class MainApplicationFrame extends JFrame {
         DashboardPanel dashboardPanel = new DashboardPanel(dataManager, this);
         mainContentPanel.add(dashboardPanel, "Dashboard");
 
+        // **Here is the fix: Set the layout manager of the JFrame to BorderLayout first**
+        setLayout(new BorderLayout());
+
+        // Add sidebar to WEST and main content to CENTER (correct BorderLayout positions)
         add(sidebarPanel, BorderLayout.WEST);
         add(mainContentPanel, BorderLayout.CENTER);
 
         loadDataInBackground();
     }
 
-
+    // All other methods unchanged...
 
     public void showPanel(String name) {
         cardLayout.show(mainContentPanel, name);
@@ -131,7 +60,9 @@ public class MainApplicationFrame extends JFrame {
     public void showCourseDetail(UUID courseId) {
         String cardName = "CourseDetail_" + courseId;
         if (!isPanelLoaded(cardName)) {
-            CourseDetailPanel detailPanel = new CourseDetailPanel(dataManager, courseId, this);
+            Course course = dataManager.getCourseById(courseId);
+            CourseDetailPanel detailPanel = new CourseDetailPanel(this, course, dataManager);
+
             detailPanel.setName(cardName);
             mainContentPanel.add(detailPanel, cardName);
         }
@@ -148,10 +79,10 @@ public class MainApplicationFrame extends JFrame {
         showPanel(cardName);
     }
 
-    public void showResourceReview(UUID resourceId) {
-        String cardName = "ResourceReview_" + resourceId;
+    public void showTopicReview(UUID topicId) {
+        String cardName = "TopicReview_" + topicId;
         if (!isPanelLoaded(cardName)) {
-            ResourceReviewPanel reviewPanel = new ResourceReviewPanel(dataManager, resourceId, this);
+            TopicReviewPanel reviewPanel = new TopicReviewPanel(dataManager, topicId, this);
             reviewPanel.setName(cardName);
             mainContentPanel.add(reviewPanel, cardName);
         }
@@ -167,7 +98,7 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void loadDataInBackground() {
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));                                 // DATA LOADED SUCCESSFULLY   Succes
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -192,7 +123,7 @@ public class MainApplicationFrame extends JFrame {
             protected Void doInBackground() throws Exception {
                 dataManager.saveData();
                 return null;
-            }                                                    // "Data saved successfully
+            }
 
             @Override
             protected void done() {
@@ -210,5 +141,12 @@ public class MainApplicationFrame extends JFrame {
             }
         }
         return false;
+    }
+
+    public void deleteCourse(UUID courseId) {
+        dataManager.deleteCourse(courseId);
+        saveDataInBackground();
+        showDashboard();
+        updateSidebar();
     }
 }

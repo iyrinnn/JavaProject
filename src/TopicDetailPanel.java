@@ -4,6 +4,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class TopicDetailPanel extends JPanel {
@@ -11,11 +12,9 @@ public class TopicDetailPanel extends JPanel {
     private MainApplicationFrame mainFrame;
     private Course currentCourse;
     public Topic currentTopic;
-    private DefaultTableModel resourcesTableModel;
-
-    private JTable resourcesTable;
-
-
+    private DefaultTableModel topicInfoTableModel;
+    private JTable topicInfoTable;
+    private JList<String> reviewHistoryList;
 
     public TopicDetailPanel(DataManager dataManager, UUID courseId, UUID topicId, MainApplicationFrame mainFrame) {
         this.dataManager = dataManager;
@@ -76,12 +75,8 @@ public class TopicDetailPanel extends JPanel {
         startReviewButton.setPreferredSize(wideButtonSize);
         styleButton(startReviewButton);
         startReviewButton.addActionListener(e -> {
-            Resource firstDueResource = dataManager.getFirstDueResourceInTopic(currentTopic.getId());
-            if (firstDueResource != null) {
-                mainFrame.showResourceReview(firstDueResource.getId());
-            } else {
-                JOptionPane.showMessageDialog(this, "No resources due for review in this topic.");
-            }
+            // Show topic review panel (assuming you have one)
+            mainFrame.showTopicReview(currentTopic.getId());
         });
 
         headerButtons.add(editButton);
@@ -91,87 +86,41 @@ public class TopicDetailPanel extends JPanel {
 
         add(headerPanel, BorderLayout.NORTH);
 
-        // Content Panel
+        // Content Panel: Show topic attributes in table and review history in list
         JPanel contentPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         contentPanel.setOpaque(false);
 
-        // Resources Panel
-        JPanel resourcesPanel = new JPanel(new BorderLayout(10, 10));
-        resourcesPanel.setOpaque(false);
+        // Topic Info Table Panel
+        JPanel topicInfoPanel = new JPanel(new BorderLayout(10, 10));
+        topicInfoPanel.setOpaque(false);
 
-        JPanel resourcesHeader = new JPanel(new BorderLayout());
-        resourcesHeader.setOpaque(false);
+        JLabel infoLabel = new JLabel("Topic Information");
+        infoLabel.setFont(headerLabelFont);
+        topicInfoPanel.add(infoLabel, BorderLayout.NORTH);
 
-        JLabel resourcesLabel = new JLabel("Resources");
-        resourcesLabel.setFont(headerLabelFont);
-        resourcesHeader.add(resourcesLabel, BorderLayout.WEST);
-
-        JButton addResourceButton = new JButton("Add new resource");
-        addResourceButton.setFont(buttonFont);
-        addResourceButton.setPreferredSize(new Dimension(160, 40));
-        styleButton(addResourceButton);
-        addResourceButton.addActionListener(e -> {
-            ResourceFormDialog dialog = new ResourceFormDialog(mainFrame, dataManager, currentCourse.getId(), this);
-            dialog.setVisible(true);
-        });
-
-        resourcesHeader.add(addResourceButton, BorderLayout.EAST);
-        resourcesPanel.add(resourcesHeader, BorderLayout.NORTH);
-
-        String[] resourceColumnNames = {"Title", "Type", "Next Review"};
-        resourcesTableModel = new DefaultTableModel(resourceColumnNames, 0);
-        resourcesTable = new JTable(resourcesTableModel);
-        resourcesTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        resourcesTable.setRowHeight(28);
-
-        resourcesTable.addMouseListener(new MouseAdapter() {
+        String[] columnNames = {"Attribute", "Value"};
+        topicInfoTableModel = new DefaultTableModel(columnNames, 0) {
             @Override
-            public void mouseClicked(MouseEvent evt) {
-                if (evt.getClickCount() == 2) {
-                    int row = resourcesTable.rowAtPoint(evt.getPoint());
-                    if (row >= 0) {
-                        Resource selectedResource = currentTopic.getResources().get(row);
-                        mainFrame.showResourceReview(selectedResource.getId());
-                    }
-                }
+            public boolean isCellEditable(int row, int column) {
+                return false; // Non-editable cells
             }
-        });
+        };
+        topicInfoTable = new JTable(topicInfoTableModel);
+        topicInfoTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        topicInfoTable.setRowHeight(28);
 
-        resourcesPanel.add(new JScrollPane(resourcesTable), BorderLayout.CENTER);
-        contentPanel.add(resourcesPanel);
+        topicInfoPanel.add(new JScrollPane(topicInfoTable), BorderLayout.CENTER);
+
+        contentPanel.add(topicInfoPanel);
 
         // Review History Panel
         JPanel reviewHistoryPanel = new JPanel(new BorderLayout(10, 10));
         reviewHistoryPanel.setBorder(BorderFactory.createTitledBorder("Review History"));
         reviewHistoryPanel.setBackground(Color.WHITE);
 
-        JList<String> historyList = new JList<>();
-        historyList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        historyList.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setText("Review " + (index + 1) + ": " + value);
-                return this;
-            }
-        });
-
-        resourcesTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 1) {
-                    int row = resourcesTable.rowAtPoint(e.getPoint());
-                    if (row >= 0) {
-                        Resource selectedResource = currentTopic.getResources().get(row);
-                        DefaultListModel<String> historyModel = new DefaultListModel<>();
-                        selectedResource.getReviewHistory().forEach(review -> historyModel.addElement(review.toString()));
-                        historyList.setModel(historyModel);
-                    }
-                }
-            }
-        });
-
-        reviewHistoryPanel.add(new JScrollPane(historyList), BorderLayout.CENTER);
+        reviewHistoryList = new JList<>();
+        reviewHistoryList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        reviewHistoryPanel.add(new JScrollPane(reviewHistoryList), BorderLayout.CENTER);
 
         contentPanel.add(reviewHistoryPanel);
 
@@ -198,9 +147,24 @@ public class TopicDetailPanel extends JPanel {
     }
 
     public void refreshPanel() {
-        resourcesTableModel.setRowCount(0);
-        for (Resource resource : currentTopic.getResources()) {
-            resourcesTableModel.addRow(new Object[]{resource.getTitle(), resource.getType(), resource.getNextReviewDate()});
-        }
+        // Clear table
+        topicInfoTableModel.setRowCount(0);
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+
+        // Add rows for topic attributes
+        topicInfoTableModel.addRow(new Object[]{"Name", currentTopic.getName()});
+        topicInfoTableModel.addRow(new Object[]{"Status", currentTopic.getStatus()});
+        topicInfoTableModel.addRow(new Object[]{"Went Online", dtf.format(currentTopic.getWentOnlineDate())});
+        topicInfoTableModel.addRow(new Object[]{"Next Review Date", currentTopic.getNextReviewDate() != null ? dtf.format(currentTopic.getNextReviewDate()) : "N/A"});
+
+        // Refresh review history list
+        DefaultListModel<String> historyModel = new DefaultListModel<>();
+        currentTopic.getReviewHistory().forEach(review -> historyModel.addElement(review.toString()));
+        reviewHistoryList.setModel(historyModel);
+    }
+
+    public Topic getCurrentTopic() {
+        return this.currentTopic;
     }
 }

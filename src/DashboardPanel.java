@@ -2,9 +2,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DashboardPanel extends JPanel {
@@ -117,13 +119,17 @@ public class DashboardPanel extends JPanel {
         dueTopicsCountLabel.setText(String.valueOf(dueTopics.size()));
         totalCoursesCountLabel.setText(String.valueOf(dataManager.getAllCourses().size()));
 
-        List<LocalDate> dates = dataManager.getAllTopicReviewDates();
-        dates.stream()
-                .max(LocalDate::compareTo)
-                .ifPresentOrElse(
-                        date -> lastReviewDateLabel.setText(date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))),
-                        () -> lastReviewDateLabel.setText("N/A")
-                );
+        // FIX: Get the most recent review date from all topics
+        Optional<LocalDate> lastReviewDate = dataManager.getAllCourses().stream()
+                .flatMap(course -> course.getTopics().stream())
+                .flatMap(topic -> topic.getReviewHistory().stream())
+                .map(review -> review.getTimestamp().toLocalDate())
+                .max(LocalDate::compareTo);
+
+        lastReviewDate.ifPresentOrElse(
+                date -> lastReviewDateLabel.setText(date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))),
+                () -> lastReviewDateLabel.setText("N/A")
+        );
 
         // --- Populate Due Topics ---
         dueTopicsPanel.removeAll();

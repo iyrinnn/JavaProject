@@ -151,19 +151,23 @@ public class CourseDetailPanel extends JPanel {
     }
 
     public void refreshPanel() {
+        // Update stats
         totalTopicsAddedLabel.setText(String.valueOf(course.getTopics().size()));
 
         long dueCount = course.getTopics().stream().filter(Topic::isDue).count();
         totalTopicsDueLabel.setText(String.valueOf(dueCount));
 
-        Optional<LocalDate> lastReview = course.getTopics().stream()
-                .flatMap(topic -> topic.getReviewHistory().stream())
-                .map(review -> review.getTimestamp().toLocalDate())
-                .max(LocalDate::compareTo);
+        // FIXED: Get the LAST review date from ANY topic in the ENTIRE app
+        Optional<LocalDate> lastReview = dataManager.getAllCourses().stream()
+                .flatMap(c -> c.getTopics().stream())          // Get all topics from all courses
+                .flatMap(topic -> topic.getReviewHistory().stream()) // Get all reviews from all topics
+                .map(review -> review.getTimestamp().toLocalDate()) // Convert to LocalDate
+                .max(LocalDate::compareTo);                    // Find the most recent date
 
         lastReviewLabel.setText(lastReview.isPresent() ?
                 lastReview.get().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) : "N/A");
 
+        // Refresh topic list
         refreshTopicList();
     }
 

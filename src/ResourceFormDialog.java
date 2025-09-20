@@ -14,7 +14,7 @@ public class ResourceFormDialog extends JDialog {
         this.courseId = courseId;
         this.topicDetailPanel = topicDetailPanel;
 
-        setSize(500, 350);
+        setSize(500, 280); // Adjusted size after removing description
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
@@ -38,45 +38,30 @@ public class ResourceFormDialog extends JDialog {
         gbc.weightx = 1.0;
         formPanel.add(titleField, gbc);
 
-        // Description label and text area
-        JLabel descriptionLabel = new JLabel("Description:");
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        formPanel.add(descriptionLabel, gbc);
-
-        JTextArea descriptionArea = new JTextArea(3, 25);
-        JScrollPane descriptionScrollPane = new JScrollPane(descriptionArea);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        formPanel.add(descriptionScrollPane, gbc);
-
         // Type label and combo box
         JLabel typeLabel = new JLabel("Type:");
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 1; // Shifted up
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         formPanel.add(typeLabel, gbc);
 
         JComboBox<ResourceType> typeComboBox = new JComboBox<>(ResourceType.values());
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 1; // Shifted up
         gbc.weightx = 1.0;
         formPanel.add(typeComboBox, gbc);
 
         // Links label and text field
         JLabel linksLabel = new JLabel("Links:");
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 2; // Shifted up
         gbc.weightx = 0;
         formPanel.add(linksLabel, gbc);
 
         JTextField linksField = new JTextField(25);
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 2; // Shifted up
         gbc.weightx = 1.0;
         formPanel.add(linksField, gbc);
 
@@ -88,7 +73,6 @@ public class ResourceFormDialog extends JDialog {
         JButton saveButton = new JButton("Save Resource");
         saveButton.addActionListener(e -> {
             String title = titleField.getText().trim();
-            String description = descriptionArea.getText().trim();
             ResourceType type = (ResourceType) typeComboBox.getSelectedItem();
             String link = linksField.getText().trim();
 
@@ -98,7 +82,8 @@ public class ResourceFormDialog extends JDialog {
             }
 
             // Create new resource with topic's ID from topicDetailPanel
-            Resource newResource = new Resource(courseId, topicDetailPanel.getCurrentTopic().getId(), title, description, type, link);
+            // Pass an empty string for description as it's removed from the form
+            Resource newResource = new Resource(courseId, topicDetailPanel.getCurrentTopic().getId(), title, "", type, link);
             dataManager.addResourceToTopic(courseId, topicDetailPanel.getCurrentTopic().getId(), newResource);
 
             topicDetailPanel.refreshPanel();

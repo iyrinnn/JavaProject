@@ -8,8 +8,6 @@ import java.util.*;
  */
 public class DataManager implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final String FILE_NAME = "smart_revision_data.ser";
-
     private List<Course> allCourses;
     private Map<UUID, Resource> allResources; // Map to store all resources for quick lookup
 
@@ -82,25 +80,6 @@ public class DataManager implements Serializable {
         return reviewDates;
     }
 
-    // Save all data to file (courses + resources)
-    public void saveData() throws IOException {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
-            oos.writeObject(allCourses);
-            oos.writeObject(allResources);
-        }
-    }
-
-    // Load all data from file
-    public void loadData() throws IOException, ClassNotFoundException {
-        File file = new File(FILE_NAME);
-        if (file.exists() && file.length() > 0) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-                allCourses = (List<Course>) ois.readObject();
-                allResources = (Map<UUID, Resource>) ois.readObject();
-            }
-        }
-    }
-
     // Get course for a given topic
     public Course getCourseForTopic(Topic topic) {
         for (Course course : allCourses) {
@@ -131,5 +110,34 @@ public class DataManager implements Serializable {
     // Optional: Get all resources
     public Collection<Resource> getAllResources() {
         return allResources.values();
+    }
+
+    // Save data to specific file
+    public void saveDataToFile(String fileName) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(allCourses);
+            oos.writeObject(allResources);
+        }
+    }
+
+    // Load data from specific file
+    public void loadDataFromFile(String fileName) throws IOException, ClassNotFoundException {
+        File file = new File(fileName);
+        if (file.exists() && file.length() > 0) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                allCourses = (List<Course>) ois.readObject();
+                allResources = (Map<UUID, Resource>) ois.readObject();
+            }
+        }
+    }
+
+    // For backward compatibility - save to default file
+    public void saveData() throws IOException {
+        saveDataToFile("smart_revision_data.ser");
+    }
+
+    // For backward compatibility - load from default file
+    public void loadData() throws IOException, ClassNotFoundException {
+        loadDataFromFile("smart_revision_data.ser");
     }
 }

@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public class EditResourceDialog extends JDialog {
     private DataManager dataManager;
-    private UUID topicId; // Not directly used for editing resource properties, but useful for context
+    private UUID topicId; 
     private Resource resourceToEdit;
-    private TopicDetailPanel topicDetailPanel; // To trigger refresh on parent panel
+    private TopicDetailPanel topicDetailPanel; //
 
     private JTextField titleField;
     private JComboBox<ResourceType> typeComboBox;
@@ -21,7 +21,7 @@ public class EditResourceDialog extends JDialog {
         this.resourceToEdit = resourceToEdit;
         this.topicDetailPanel = topicDetailPanel;
 
-        setSize(500, 280); // Consistent size with Add Resource dialog
+        setSize(500, 280);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
@@ -32,7 +32,7 @@ public class EditResourceDialog extends JDialog {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Title label and text field
+
         JLabel titleLabel = new JLabel("Title:");
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -46,7 +46,7 @@ public class EditResourceDialog extends JDialog {
         gbc.weightx = 1.0;
         formPanel.add(titleField, gbc);
 
-        // Type label and combo box
+
         JLabel typeLabel = new JLabel("Type:");
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -55,13 +55,13 @@ public class EditResourceDialog extends JDialog {
         formPanel.add(typeLabel, gbc);
 
         typeComboBox = new JComboBox<>(ResourceType.values());
-        typeComboBox.setSelectedItem(resourceToEdit.getType()); // Pre-select current type
+        typeComboBox.setSelectedItem(resourceToEdit.getType());
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 1.0;
         formPanel.add(typeComboBox, gbc);
 
-        // Links label and text field
+
         JLabel linksLabel = new JLabel("Link:");
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -77,7 +77,7 @@ public class EditResourceDialog extends JDialog {
 
         add(formPanel, BorderLayout.CENTER);
 
-        // Buttons panel with Save and Cancel buttons
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
         JButton saveButton = new JButton("Save Resource");
@@ -91,14 +91,13 @@ public class EditResourceDialog extends JDialog {
                 return;
             }
 
-            // Update the existing resource object
+
             resourceToEdit.setName(newTitle);
             resourceToEdit.setType(newType);
             resourceToEdit.setUrl(newLink);
-            // Description is not in the form, so it remains unchanged
 
-            saveDataSafely(); // Save changes to disk
-            topicDetailPanel.refreshPanel(); // Refresh the topic detail panel to show updated resource
+            saveDataSafely();
+            topicDetailPanel.refreshPanel();
             dispose(); // Close the dialog
         });
         buttonPanel.add(saveButton);

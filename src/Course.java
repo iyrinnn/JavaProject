@@ -1,5 +1,3 @@
-// Course.java
-// This is the data model for a course.
 
 import java.io.Serializable;
 import java.util.ArrayList;

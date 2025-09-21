@@ -26,7 +26,7 @@ class SidebarPanel extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setOpaque(false); // Transparent to show parent's background
 
-        JLabel userNameLabel = new JLabel("Let go of me");
+        JLabel userNameLabel = new JLabel("Study Buddy");
         userNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Notion uses 14pt bold for sidebar user label
         userNameLabel.setForeground(new Color(0x2E2E2E)); // Notion dark gray text
         headerPanel.add(userNameLabel);

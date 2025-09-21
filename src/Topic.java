@@ -42,7 +42,6 @@ class Topic implements Serializable {
     public List<Resource> getResources() { return resources; }
     public void addResource(Resource resource) { resources.add(resource); }
 
-    // ✅ New methods for topic review history
     public List<Review> getReviewHistory() { return reviewHistory; }
     public void addReviewRecord(Review record) { reviewHistory.add(record); }
 }

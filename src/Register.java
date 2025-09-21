@@ -215,13 +215,5 @@ public class Register extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        // This allows you to test Register independently
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Register();
-            }
-        });
-    }
+
 }

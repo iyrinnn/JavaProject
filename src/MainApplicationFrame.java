@@ -24,7 +24,7 @@ public class MainApplicationFrame extends JFrame {
             setLayout(new BorderLayout(10, 10));
             add(new JLabel("<html><h2 style='text-align: center;'>Smart Revision & Resource Organizer</h2>" +
                     "<p style='text-align: center;'>Version 1.0</p>" +
-                    "<p style='text-align: center;'>Developed by Irin</p></html>", SwingConstants.CENTER), BorderLayout.CENTER);
+                    "<p style='text-align: center;'>Developed by Irin and Sujana </p></html>", SwingConstants.CENTER), BorderLayout.CENTER);
             JButton closeButton = new JButton("Close");
             closeButton.addActionListener(e -> dispose());
             JPanel buttonPanel = new JPanel();
@@ -292,7 +292,7 @@ public class MainApplicationFrame extends JFrame {
         updateSidebar();
     }
 
-    // Getter for current username (if needed elsewhere)
+
     public String getCurrentUsername() {
         return currentUsername;
     }

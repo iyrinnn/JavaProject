@@ -49,20 +49,18 @@ public class UserManager {
     public static boolean registerUser(String username, String password) {
         if (isUserExists(username)) return false;
         try {
-            // Create data directory if it doesn't exist
             new File(USER_DATA_DIR).mkdirs();
 
-            // Save credentials
+
             BufferedWriter writer = new BufferedWriter(new FileWriter(CREDENTIALS_FILE, true));
             writer.write(username + "," + password);
             writer.newLine();
             writer.close();
 
-            // Create user-specific data file
             String userDataFile = getUserDataFilePath(username);
             new File(userDataFile).getParentFile().mkdirs();
 
-            // Initialize with empty data
+
             DataManager initialData = new DataManager();
             initialData.saveDataToFile(userDataFile);
 

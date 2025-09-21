@@ -2,14 +2,10 @@ import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
 
-/**
- * DataManager handles persistence and retrieval of Courses, Topics, and Resources.
- * Review is based on Topics, not individual Resources.
- */
 public class DataManager implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<Course> allCourses;
-    private Map<UUID, Resource> allResources; // Map to store all resources for quick lookup
+    private Map<UUID, Resource> allResources;
 
     public DataManager() {
         this.allCourses = new ArrayList<>();
@@ -102,7 +98,6 @@ public class DataManager implements Serializable {
         }
     }
 
-    // Convenience method to get resource by its ID (or null if not found)
     public Resource getResourceById(UUID resourceId) {
         return allResources.get(resourceId);
     }
@@ -131,12 +126,10 @@ public class DataManager implements Serializable {
         }
     }
 
-    // For backward compatibility - save to default file
     public void saveData() throws IOException {
         saveDataToFile("smart_revision_data.ser");
     }
 
-    // For backward compatibility - load from default file
     public void loadData() throws IOException, ClassNotFoundException {
         loadDataFromFile("smart_revision_data.ser");
     }

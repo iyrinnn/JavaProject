@@ -178,14 +178,4 @@ public class Login extends JFrame {
         }
     }
 
-
-    public static void main(String[] args) {
-        // This allows you to test Login independently
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Login();
-            }
-        });
-    }
 }
